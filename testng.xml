@@ -1,0 +1,8 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Modules Scenarios Test Suite" verbose="1">
+    <test name="Modules Scenarios Tests" preserve-order="true">
+        <packages>
+            <package name="ModulesScenarios"/>
+        </packages>
+    </test>
+</suite>

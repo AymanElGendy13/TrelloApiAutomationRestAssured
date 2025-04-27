@@ -1,0 +1,17 @@
+{
+  "data":
+  {
+    "boardName": "Automation Project",
+    "boardDescription": "Test Board",
+    "updatedBoardName": "Updated Project",
+    "updatedBoardDescription": "Updated Description",
+    "listName": "Test Cases",
+    "updatedListName": "Updated Test Cases",
+    "NewPosition": "top",
+    "cardName": "Test Card",
+    "updatedCardName": "Updated Test Card",
+    "updatedCardDescription": "Updated Description",
+    "checklistName": "Test Checklist",
+    "updatedChecklistName": "Updated Test Checklist"
+  }
+}
