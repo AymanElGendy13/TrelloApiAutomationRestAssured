@@ -2,7 +2,7 @@
  
 <a href="https://rest-assured.io"><img src="https://rest-assured.io/img/logo-transparent.png" width="50" alt="Rest Assured"/></a>
 
-![Java](https://img.shields.io/badge/Java-23-red)  ![TestNG](https://img.shields.io/badge/TestNG-7.11-orange) ![Allure](https://img.shields.io/badge/Reporting-AllureReports-green)
+![Java](https://img.shields.io/badge/Java-23-red) ![Rest Assured](https://img.shields.io/badge/RestAssured-5.5.1-green) ![TestNG](https://img.shields.io/badge/TestNG-7.10.2-orange) ![Allure](https://img.shields.io/badge/Reporting-AllureReports-blue)
 
 
 End-to-end **API test automation framework** for testing **Trello REST APIs** with full CRUD coverage and test data-driven design.
