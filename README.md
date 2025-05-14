@@ -39,7 +39,7 @@ Link: [Trello REST API Docs](https://developer.atlassian.com/cloud/trello/rest/a
 | Auth Handling      | API Key & Token      |
 
 ## 📂 Project Structure
-
+```
 trello-api-automation/
 ├── src/
 │ ├── main/java/
@@ -59,7 +59,7 @@ trello-api-automation/
 ├── allure-results/ # Allure reporting
 ├── pom.xml # Maven dependencies and plugins
 └── TestNGRunner # Suite runner File
-
+```
 
 ```bash
 # Clone the repository
