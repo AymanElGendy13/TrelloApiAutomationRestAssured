@@ -9,6 +9,7 @@ import Pojo.Card;
 import Pojo.CheckList;
 import Pojo.List;
 import org.testng.Assert;
+import org.testng.asserts.SoftAssert;
 
 public class TrelloTestUtils {
     private final BoardClient boardClient = new BoardClient();
@@ -16,12 +17,14 @@ public class TrelloTestUtils {
     private final CardClient cardClient = new CardClient();
     private final ChecklistClient checklistClient = new ChecklistClient();
 
+    SoftAssert softAssert = new SoftAssert();
+
     // ========== BOARD OPERATIONS ==========
     public Board createAndVerifyBoard(String name, String description) {
         Board board = boardClient.createBoard(new Board(name, description, true));
         Logs.info("BOARD CREATED: " + name + " | ID: " + board.getBoardId());
-        Assert.assertEquals(board.getBoardName(), name);
-        Assert.assertEquals(board.getBoardDesc(), description);
+        softAssert.assertEquals(board.getBoardName(), name);
+        softAssert.assertEquals(board.getBoardDesc(), description);
         return board;
     }
 
@@ -31,8 +34,8 @@ public class TrelloTestUtils {
         Logs.info("BOARD UPDATED: " + newName + " | ID: " + board.getBoardId());
 
         Board fetchedBoard = boardClient.getBoardById(board.getBoardId());
-        Assert.assertEquals(fetchedBoard.getBoardName(), newName);
-        Assert.assertEquals(fetchedBoard.getBoardDesc(), newDesc);
+        softAssert.assertEquals(fetchedBoard.getBoardName(), newName);
+        softAssert.assertEquals(fetchedBoard.getBoardDesc(), newDesc);
         return result;
     }
 
@@ -46,8 +49,8 @@ public class TrelloTestUtils {
     public List createAndVerifyList(Board board, String listName) {
         List list = listClient.createList(new List(board.getBoardId(), listName));
         Logs.info("LIST CREATED: " + listName + " | ID: " + list.getListId());
-        Assert.assertEquals(list.getListName(), listName);
-        Assert.assertEquals(list.getBoardId(), board.getBoardId());
+        softAssert.assertEquals(list.getListName(), listName);
+        softAssert.assertEquals(list.getBoardId(), board.getBoardId());
         return list;
     }
 
@@ -57,7 +60,7 @@ public class TrelloTestUtils {
         Logs.info("LIST UPDATED: " + newName + " | ID: " + list.getListId());
 
         List fetchedList = listClient.getList(list.getListId());
-        Assert.assertEquals(fetchedList.getListName(), newName);
+        softAssert.assertEquals(fetchedList.getListName(), newName);
         return result;
     }
 
@@ -65,8 +68,8 @@ public class TrelloTestUtils {
     public Card createAndVerifyCard(List list, String cardName) {
         Card card = cardClient.createCard(new Card(list.getListId(), cardName));
         Logs.info("CARD CREATED: " + cardName + " | ID: " + card.getCardId());
-        Assert.assertEquals(card.getCardName(), cardName);
-        Assert.assertEquals(card.getListId(), list.getListId());
+        softAssert.assertEquals(card.getCardName(), cardName);
+        softAssert.assertEquals(card.getListId(), list.getListId());
         return card;
     }
 
@@ -81,9 +84,9 @@ public class TrelloTestUtils {
         Card fetchedCard = cardClient.getCard(updatedCard.getCardId());
         fetchedCard.setCardName("Updated Test Card");
         Logs.info("CARD FETCHED: " + fetchedCard.getCardName() + " | ID: " + fetchedCard.getCardId());
-        Assert.assertEquals(fetchedCard.getListId(), card.getListId(), "List ID mismatch");
-        Assert.assertEquals(fetchedCard.getCardDescription(), newDesc, "Card description mismatch");
-        Assert.assertEquals(fetchedCard.getCardName(), newName, "Carddd name mismatch");
+        softAssert.assertEquals(fetchedCard.getListId(), card.getListId(), "List ID mismatch");
+        softAssert.assertEquals(fetchedCard.getCardDescription(), newDesc, "Card description mismatch");
+        softAssert.assertEquals(fetchedCard.getCardName(), newName, "Carddd name mismatch");
 
         return result;
     }
@@ -98,8 +101,8 @@ public class TrelloTestUtils {
     public CheckList createAndVerifyChecklist(Card card, String checklistName) {
         CheckList checklist = checklistClient.createCheckList(new CheckList(card.getCardId(), checklistName));
         Logs.info("CHECKLIST CREATED: " + checklistName + " | ID: " + checklist.getChecklistId());
-        Assert.assertEquals(checklist.getChecklistName(), checklistName);
-        Assert.assertEquals(checklist.getCardId(), card.getCardId());
+        softAssert.assertEquals(checklist.getChecklistName(), checklistName);
+        softAssert.assertEquals(checklist.getCardId(), card.getCardId());
         return checklist;
     }
 
@@ -109,7 +112,7 @@ public class TrelloTestUtils {
         Logs.info("CHECKLIST UPDATED: " + newName + " | ID: " + checklist.getChecklistId());
 
         CheckList fetchedChecklist = checklistClient.getCheckList(checklist.getChecklistId());
-        Assert.assertEquals(fetchedChecklist.getChecklistName(), newName);
+        softAssert.assertEquals(fetchedChecklist.getChecklistName(), newName);
         return result;
     }
 
@@ -123,9 +126,9 @@ public class TrelloTestUtils {
     private void verifyEntityDeleted(Runnable fetchOperation) {
         try {
             fetchOperation.run();
-            Assert.fail("Entity should not exist after deletion");
+            softAssert.fail("Entity should not exist after deletion");
         } catch (RuntimeException e) {
-            Assert.assertTrue(e.getMessage().contains("404"), "Expected 404 error");
+            softAssert.assertTrue(e.getMessage().contains("404"), "Expected 404 error");
         }
     }
 }

@@ -9,7 +9,6 @@ public class TestNGListeners implements IExecutionListener, ITestListener, IInvo
 
     File allureResults = new File("test-outputs/allure-results");
     File logs = new File("test-outputs/Logs");
-    File screenshots = new File("test-outputs/Screenshots");
 
     @Override
     public void onExecutionStart() {

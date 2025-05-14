@@ -10,10 +10,9 @@ import Utils.Logs;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.testng.asserts.SoftAssert;
 
 import static Payloads.BoardPayload.getRandom;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
 
 public class ListTest extends BaseTest {
 
@@ -21,6 +20,7 @@ public class ListTest extends BaseTest {
     private final ListClient listClient = new ListClient();
     private String createdBoardId;
     private String createdListId;
+    SoftAssert softAssert = new SoftAssert();
 
     @BeforeClass
     public void setUp() {
@@ -45,10 +45,10 @@ public class ListTest extends BaseTest {
         );
         List createdList = listClient.createList(listRequest);
         Logs.info("Created list: " + createdList);
-        assertNotNull(createdList.getListId());
-        assertNotNull(createdList.getListName());
-        assertEquals(createdList.getBoardId(),createdBoardId);
-        assertEquals(createdList.getBoardId(), listRequest.getBoardId());
+        softAssert.assertNotNull(createdList.getListId());
+        softAssert.assertNotNull(createdList.getListName());
+        softAssert.assertEquals(createdList.getBoardId(),createdBoardId);
+        softAssert.assertEquals(createdList.getBoardId(), listRequest.getBoardId());
         createdListId = createdList.getListId();
     }
 
@@ -57,9 +57,9 @@ public class ListTest extends BaseTest {
         Logs.info("Getting list with ID: " + createdListId);
         List retrievedList = listClient.getList(createdListId);
         Logs.info("Retrieved list: " + retrievedList);
-        assertNotNull(retrievedList.getListId());
-        assertNotNull(retrievedList.getListName());
-        assertEquals(retrievedList.getListId(), createdListId);
+        softAssert.assertNotNull(retrievedList.getListId());
+        softAssert.assertNotNull(retrievedList.getListName());
+        softAssert.assertEquals(retrievedList.getListId(), createdListId);
     }
 
     @Test(priority = 3)
@@ -72,10 +72,10 @@ public class ListTest extends BaseTest {
         Logs.info("Updating list with ID: " + createdListId);
         List updatedList = listClient.updateList(createdListId,updatedListRequest);
         Logs.info("Updated list: " + updatedList);
-        assertNotNull(updatedList.getListId());
-        assertNotNull(updatedList.getListName());
-        assertEquals(updatedList.getBoardId(), createdBoardId);
-        assertEquals(updatedList.getListId(), updatedListRequest.getListId());
+        softAssert.assertNotNull(updatedList.getListId());
+        softAssert.assertNotNull(updatedList.getListName());
+        softAssert.assertEquals(updatedList.getBoardId(), createdBoardId);
+        softAssert.assertEquals(updatedList.getListId(), updatedListRequest.getListId());
     }
 
     @AfterClass

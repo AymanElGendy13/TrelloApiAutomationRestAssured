@@ -16,6 +16,7 @@ import Utils.Logs;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.testng.asserts.SoftAssert;
 
 import static Payloads.BoardPayload.getRandom;
 import static org.testng.Assert.assertEquals;
@@ -31,6 +32,7 @@ public class ChecklistTest extends BaseTest {
     private String createdListId;
     private String createdCardId;
     private String createdChecklistId;
+    SoftAssert softAssert = new SoftAssert();
 
     @BeforeClass
     public void setUp(){
@@ -77,11 +79,11 @@ public class ChecklistTest extends BaseTest {
         CheckList createdChecklist = checkListClient.createCheckList(checklistRequest);
         Logs.info("Created checklist: " + createdChecklist);
         createdChecklistId = createdChecklist.getChecklistId();
-        assertNotNull(createdChecklist);
-        assertNotNull(createdChecklist.getChecklistId());
-        assertNotNull(createdChecklist.getChecklistName());
-        assertNotNull(createdChecklist.getCardId());
-        assertEquals(createdChecklist.getCardId(), createdCardId);
+        softAssert.assertNotNull(createdChecklist);
+        softAssert.assertNotNull(createdChecklist.getChecklistId());
+        softAssert.assertNotNull(createdChecklist.getChecklistName());
+        softAssert.assertNotNull(createdChecklist.getCardId());
+        softAssert.assertEquals(createdChecklist.getCardId(), createdCardId);
 
     }
 
@@ -89,8 +91,8 @@ public class ChecklistTest extends BaseTest {
     public void getChecklistTest() {
         CheckList checklist = checkListClient.getCheckList(createdChecklistId);
         Logs.info("Get checklist: " + checklist);
-        assertNotNull(checklist);
-        assertEquals(checklist.getChecklistId(), createdChecklistId);
+        softAssert.assertNotNull(checklist);
+        softAssert.assertEquals(checklist.getChecklistId(), createdChecklistId);
     }
 
     @Test(priority = 3)
@@ -102,8 +104,8 @@ public class ChecklistTest extends BaseTest {
         Logs.info("Card id: " + createdCardId);
         CheckList updatedChecklist = checkListClient.updateCheckList(createdChecklistId,checklistRequest);
         Logs.info("Updated checklist: " + updatedChecklist);
-        assertNotNull(updatedChecklist);
-        assertEquals(updatedChecklist.getCardId(), createdCardId);
+        softAssert.assertNotNull(updatedChecklist);
+        softAssert.assertEquals(updatedChecklist.getCardId(), createdCardId);
     }
 
     @Test(priority = 4)

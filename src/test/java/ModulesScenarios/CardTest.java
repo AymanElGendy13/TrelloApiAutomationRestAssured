@@ -13,6 +13,7 @@ import Utils.Logs;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.testng.asserts.SoftAssert;
 
 import static Payloads.BoardPayload.getRandom;
 import static org.testng.Assert.assertEquals;
@@ -27,6 +28,7 @@ public class CardTest extends BaseTest {
     private String createdListId;
     private String createdCardId;
     private String createdAttachmentId;
+    SoftAssert softAssert = new SoftAssert();
 
     @BeforeClass
     public void setUp(){
@@ -62,8 +64,8 @@ public class CardTest extends BaseTest {
         Card createdCard = cardClient.createCard(cardRequest);
         Logs.info("Created card: " + createdCard);
         createdCardId = createdCard.getCardId();
-        assertNotNull(createdCard);
-        assertNotNull(createdCardId);
+        softAssert.assertNotNull(createdCard);
+        softAssert.assertNotNull(createdCardId);
 
     }
 
@@ -71,8 +73,8 @@ public class CardTest extends BaseTest {
     public void getCardTest() {
         Card card = cardClient.getCard(createdCardId);
         Logs.info("Get card: " + card);
-        assertNotNull(card);
-        assertEquals(card.getCardId(), createdCardId);
+        softAssert.assertNotNull(card);
+        softAssert.assertEquals(card.getCardId(), createdCardId);
     }
 
     @Test(priority = 3)
@@ -84,8 +86,8 @@ public class CardTest extends BaseTest {
         Logs.info("Card id: " + createdCardId);
         Card updatedCard = cardClient.updateCard(createdCardId,cardRequest);
         Logs.info("Updated card: " + updatedCard);
-        assertNotNull(updatedCard);
-        assertEquals(updatedCard.getCardId(), createdCardId);
+        softAssert.assertNotNull(updatedCard);
+        softAssert.assertEquals(updatedCard.getCardId(), createdCardId);
     }
 
     @AfterClass

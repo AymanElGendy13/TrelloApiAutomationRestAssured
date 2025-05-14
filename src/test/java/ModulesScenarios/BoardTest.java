@@ -4,8 +4,8 @@ import Clients.BoardClient;
 import Payloads.BoardPayload;
 import Pojo.Board;
 import Utils.Logs;
-import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
+import org.testng.asserts.SoftAssert;
 
 import static Payloads.BoardPayload.getRandom;
 import static org.testng.Assert.assertEquals;
@@ -14,6 +14,7 @@ import static org.testng.Assert.assertNotNull;
 public class BoardTest extends BaseTest {
     private final BoardClient boardClient = new BoardClient();
     private String createdBoardId;
+    SoftAssert softAssert = new SoftAssert();
 
     @Test(priority = 1)
     public void createBoardTest() {
@@ -26,9 +27,9 @@ public class BoardTest extends BaseTest {
 
         Board createdBoard = boardClient.createBoard(boardRequest);
         Logs.info("Created board: " + createdBoard);
-        assertNotNull(createdBoard.getBoardId());
-        assertEquals(createdBoard.getBoardName(), boardRequest.getBoardName());
-        assertEquals(createdBoard.getBoardDesc(), boardRequest.getBoardDesc());
+        softAssert.assertNotNull(createdBoard.getBoardId());
+        softAssert.assertEquals(createdBoard.getBoardName(), boardRequest.getBoardName());
+        softAssert.assertEquals(createdBoard.getBoardDesc(), boardRequest.getBoardDesc());
         createdBoardId = createdBoard.getBoardId();
     }
 
@@ -36,9 +37,9 @@ public class BoardTest extends BaseTest {
     public void getBoardByIdTest() {
         Logs.info("Getting board by ID: " + createdBoardId);
         Board retrievedBoard = boardClient.getBoardById(createdBoardId);
-        assertNotNull(retrievedBoard);
-        assertNotNull(retrievedBoard.getBoardId());
-        assertEquals(retrievedBoard.getBoardId(), createdBoardId);
+        softAssert.assertNotNull(retrievedBoard);
+        softAssert.assertNotNull(retrievedBoard.getBoardId());
+        softAssert.assertEquals(retrievedBoard.getBoardId(), createdBoardId);
     }
 
     @Test(priority = 3)
@@ -52,10 +53,10 @@ public class BoardTest extends BaseTest {
 
         Board updatedBoard = boardClient.updateBoard(createdBoardId,boardRequest);
         Logs.info("Updated board: " + updatedBoard);
-        assertNotNull(updatedBoard.getBoardId());
-        assertEquals(updatedBoard.getBoardId(), createdBoardId);
-        assertEquals(updatedBoard.getBoardName(), boardRequest.getBoardName());
-        assertEquals(updatedBoard.getBoardDesc(), boardRequest.getBoardDesc());
+        softAssert.assertNotNull(updatedBoard.getBoardId());
+        softAssert.assertEquals(updatedBoard.getBoardId(), createdBoardId);
+        softAssert.assertEquals(updatedBoard.getBoardName(), boardRequest.getBoardName());
+        softAssert.assertEquals(updatedBoard.getBoardDesc(), boardRequest.getBoardDesc());
     }
 
     @Test(priority = 4)

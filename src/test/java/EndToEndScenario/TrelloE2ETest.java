@@ -1,7 +1,6 @@
 package EndToEndScenario;
 
 import Pojo.*;
-import Clients.*;
 import Utils.JsonUtils;
 import Utils.Logs;
 import Utils.TestNGListeners;
