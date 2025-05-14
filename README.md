@@ -30,9 +30,9 @@ Link: [Trello REST API Docs](https://developer.atlassian.com/cloud/trello/rest/a
 
 | Component          | Technology Stack     |
 |--------------------|----------------------|
-| API Test Library   | Rest Assured 5.4.0   |
+| API Test Library   | Rest Assured 5.5.1   |
 | Language           | Java 23              |
-| Test Framework     | TestNG 7.11          |
+| Test Framework     | TestNG 7.10.2          |
 | Data Format        | JSON                 |
 | Reporting          | Allure + Log4j2      |
 | Build Tool         | Maven                |
