@@ -61,6 +61,7 @@ trello-api-automation/
 └── TestNGRunner # Suite runner File
 ```
 
+## 🔧 Installation & Execution
 ```bash
 # Clone the repository
 git clone https://github.com/AymanElGendy13/TrelloApiAutomationRestAssured.git
