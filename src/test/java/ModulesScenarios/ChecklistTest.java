@@ -1,129 +1,137 @@
 package ModulesScenarios;
 
-import Clients.BoardClient;
-import Clients.CardClient;
-import Clients.ChecklistClient;
-import Clients.ListClient;
-import Payloads.BoardPayload;
-import Payloads.CardPayload;
-import Payloads.ChecklistPayload;
-import Payloads.ListPayload;
-import Pojo.Board;
-import Pojo.Card;
 import Pojo.CheckList;
 import Pojo.List;
+import Steps.BoardSteps;
+import Steps.CardSteps;
+import Steps.CheckListSteps;
+import Pojo.Board;
+import Pojo.Card;
 import Utils.Logs;
+import Utils.TrelloTestUtils;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.testng.asserts.SoftAssert;
 
-import static Payloads.BoardPayload.getRandom;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
-
 public class ChecklistTest extends BaseTest {
+    private final TrelloTestUtils trelloUtils = new TrelloTestUtils();
+    private SoftAssert softAssert = new SoftAssert();
 
-    private final BoardClient boardClient = new BoardClient();
-    private final ListClient listClient = new ListClient();
-    private final CardClient cardClient = new CardClient();
-    private final ChecklistClient checkListClient = new ChecklistClient();
     private String createdBoardId;
     private String createdListId;
     private String createdCardId;
     private String createdChecklistId;
-    SoftAssert softAssert = new SoftAssert();
 
     @BeforeClass
-    public void setUp(){
+    public void setUp() {
         Logs.info("==============================CheckList Test=============================");
-        // Create a board
-        Board boardRequest = new Board(
-                getRandom(BoardPayload.boardNames),
-                getRandom(BoardPayload.boardDescriptions),
-                true
-        );
-        Board createdBoard = boardClient.createBoard(boardRequest);
-        Logs.info("Created board: " + createdBoard);
-        createdBoardId = createdBoard.getBoardId();
 
-        // Create a list
-        List listRequest = new List(
-                createdBoardId,
-                getRandom(ListPayload.listNames)
-        );
-        Logs.info("created board id: " + createdBoardId);
-        List createdList = listClient.createList(listRequest);
-        Logs.info("Created list: " + createdList);
-        createdListId = createdList.getListId();
+        // Create board with random test data
+        Board board = trelloUtils.createAndVerifyBoard();
+        createdBoardId = board.getBoardId();
+        Logs.info("Created board ID: " + createdBoardId);
 
-        //Create a Card
-        Card cardRequest = new Card(
-                createdListId,
-                getRandom(CardPayload.cardNames)
-        );
-        Card createdCard = cardClient.createCard(cardRequest);
-        Logs.info("created list id: " + createdListId);
-        createdCardId = createdCard.getCardId();
+        // Create list in the board
+        List list = trelloUtils.createAndVerifyList(board);
+        createdListId = list.getListId();
+        Logs.info("Created list ID: " + createdListId);
 
+        // Create card in the list
+        Card card = trelloUtils.createAndVerifyCard(list);
+        createdCardId = card.getCardId();
+        Logs.info("Created card ID: " + createdCardId);
     }
 
     @Test(priority = 1)
     public void createChecklistTest() {
-        CheckList checklistRequest = new CheckList(
-                createdCardId,
-                getRandom(ChecklistPayload.checklistNames)
-        );
-        Logs.info("Card id: " + createdCardId);
-        Logs.info("Checklist name: " + checklistRequest.getChecklistName());
-        CheckList createdChecklist = checkListClient.createCheckList(checklistRequest);
-        Logs.info("Created checklist: " + createdChecklist);
-        createdChecklistId = createdChecklist.getChecklistId();
-        softAssert.assertNotNull(createdChecklist);
-        softAssert.assertNotNull(createdChecklist.getChecklistId());
-        softAssert.assertNotNull(createdChecklist.getChecklistName());
-        softAssert.assertNotNull(createdChecklist.getCardId());
-        softAssert.assertEquals(createdChecklist.getCardId(), createdCardId);
+        if (createdCardId == null) {
+            throw new IllegalStateException("Card must be created first");
+        }
 
+        CheckList checklist = trelloUtils.createAndVerifyChecklist(CardSteps.getCard(createdCardId));
+        createdChecklistId = checklist.getChecklistId();
+        Logs.info("Created checklist ID: " + createdChecklistId);
+
+        softAssert.assertNotNull(checklist, "Checklist should not be null");
+        softAssert.assertNotNull(createdChecklistId, "Checklist ID should not be null");
+        softAssert.assertEquals(checklist.getCardId(), createdCardId, "Checklist should belong to the created card");
     }
 
     @Test(priority = 2)
     public void getChecklistTest() {
-        CheckList checklist = checkListClient.getCheckList(createdChecklistId);
-        Logs.info("Get checklist: " + checklist);
-        softAssert.assertNotNull(checklist);
-        softAssert.assertEquals(checklist.getChecklistId(), createdChecklistId);
+        if (createdChecklistId == null) {
+            throw new IllegalStateException("Checklist must be created first");
+        }
+
+        CheckList checklist = CheckListSteps.getChecklist(createdChecklistId);
+        Logs.info("Retrieved checklist: " + checklist);
+
+        softAssert.assertNotNull(checklist, "Checklist should exist");
+        softAssert.assertEquals(checklist.getChecklistId(), createdChecklistId, "Checklist ID should match");
+        softAssert.assertEquals(checklist.getCardId(), createdCardId, "Checklist should still belong to the original card");
     }
 
     @Test(priority = 3)
     public void updateChecklistTest() {
-        CheckList checklistRequest = new CheckList(
-                createdCardId,
-                getRandom(ChecklistPayload.updatedChecklistNames)
+        if (createdChecklistId == null) {
+            throw new IllegalStateException("Checklist must be created first");
+        }
+
+        CheckList updatedChecklist = trelloUtils.updateAndVerifyChecklist(
+                CheckListSteps.getChecklist(createdChecklistId)
         );
-        Logs.info("Card id: " + createdCardId);
-        CheckList updatedChecklist = checkListClient.updateCheckList(createdChecklistId,checklistRequest);
         Logs.info("Updated checklist: " + updatedChecklist);
-        softAssert.assertNotNull(updatedChecklist);
-        softAssert.assertEquals(updatedChecklist.getCardId(), createdCardId);
+
+        // Verify the update persisted
+        CheckList fetchedChecklist = CheckListSteps.getChecklist(createdChecklistId);
+        softAssert.assertEquals(fetchedChecklist.getChecklistName(),
+                updatedChecklist.getChecklistName(), "Checklist name should be updated");
+        softAssert.assertEquals(fetchedChecklist.getChecklistId(), createdChecklistId,
+                "Checklist ID should remain the same");
     }
 
     @Test(priority = 4)
     public void deleteChecklistTest() {
-        checkListClient.deleteCheckList(createdChecklistId);
+        if (createdChecklistId == null) {
+            throw new IllegalStateException("Checklist must be created first");
+        }
+
+        trelloUtils.deleteAndVerifyChecklist(CheckListSteps.getChecklist(createdChecklistId));
         Logs.info("Checklist deleted successfully");
+
+        // Verify deletion
+        try {
+            CheckListSteps.getChecklist(createdChecklistId);
+            softAssert.fail("Checklist should not exist after deletion");
+        } catch (RuntimeException e) {
+            softAssert.assertTrue(
+                    e.getMessage().contains("404") || e.getMessage().contains("not found"),
+                    "Expected not found error"
+            );
+        }
     }
 
     @AfterClass
-    public void deleteCardAndBoard()
-    {
-        // Delete the card
-        cardClient.deleteCard(createdCardId);
-        Logs.info("Card deleted successfully");
+    public void cleanUp() {
+        Logs.info("Starting test cleanup");
 
-        // Delete the board
-        boardClient.deleteBoard(createdBoardId);
-        Logs.info("Board deleted successfully");
+        try {
+            // Delete card if it exists
+            if (createdCardId != null) {
+                Logs.info("Deleting card with ID: " + createdCardId);
+                trelloUtils.deleteAndVerifyCard(CardSteps.getCard(createdCardId));
+            }
+
+            // Delete board if it exists
+            if (createdBoardId != null) {
+                Logs.info("Deleting board with ID: " + createdBoardId);
+                trelloUtils.deleteAndVerifyBoard(BoardSteps.getBoard(createdBoardId));
+            }
+        } catch (Exception e) {
+            Logs.error("Cleanup failed: " + e.getMessage());
+        }
+
+        softAssert.assertAll();
     }
-
 }

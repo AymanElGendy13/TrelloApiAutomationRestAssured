@@ -1,125 +1,119 @@
 package Utils;
 
-import Clients.BoardClient;
-import Clients.CardClient;
-import Clients.ChecklistClient;
-import Clients.ListClient;
+import Steps.BoardSteps;
+import Steps.CardSteps;
+import Steps.CheckListSteps;
+import Steps.ListSteps;
 import Pojo.Board;
 import Pojo.Card;
 import Pojo.CheckList;
 import Pojo.List;
-import org.testng.Assert;
 import org.testng.asserts.SoftAssert;
 
 public class TrelloTestUtils {
-    private final BoardClient boardClient = new BoardClient();
-    private final ListClient listClient = new ListClient();
-    private final CardClient cardClient = new CardClient();
-    private final ChecklistClient checklistClient = new ChecklistClient();
-
-    SoftAssert softAssert = new SoftAssert();
+    private final SoftAssert softAssert = new SoftAssert();
 
     // ========== BOARD OPERATIONS ==========
-    public Board createAndVerifyBoard(String name, String description) {
-        Board board = boardClient.createBoard(new Board(name, description, true));
-        Logs.info("BOARD CREATED: " + name + " | ID: " + board.getBoardId());
-        softAssert.assertEquals(board.getBoardName(), name);
-        softAssert.assertEquals(board.getBoardDesc(), description);
+    public Board createAndVerifyBoard() {
+        Board board = BoardSteps.createBoard();
+        Logs.info("BOARD CREATED: " + board.getBoardName() + " | ID: " + board.getBoardId());
+
+        Board fetchedBoard = BoardSteps.getBoard(board.getBoardId());
+        softAssert.assertNotNull(board.getBoardId(), "Board ID should not be null");
+        softAssert.assertNotNull(board.getBoardName(), "Board name should not be null");
+        softAssert.assertEquals(fetchedBoard.getBoardName(), board.getBoardName());
+        softAssert.assertEquals(fetchedBoard.getBoardDesc(), board.getBoardDesc());
         return board;
     }
 
-    public Board updateAndVerifyBoard(Board board, String newName, String newDesc) {
-        Board updatedBoard = new Board(board.getBoardId(), newName, newDesc);
-        Board result = boardClient.updateBoard(board.getBoardId(), updatedBoard);
-        Logs.info("BOARD UPDATED: " + newName + " | ID: " + board.getBoardId());
+    public Board updateAndVerifyBoard(Board board) {
+        Board updatedBoard = BoardSteps.updateBoard(board.getBoardId());
+        Logs.info("BOARD UPDATED: " + updatedBoard.getBoardName() + " | ID: " + board.getBoardId());
 
-        Board fetchedBoard = boardClient.getBoardById(board.getBoardId());
-        softAssert.assertEquals(fetchedBoard.getBoardName(), newName);
-        softAssert.assertEquals(fetchedBoard.getBoardDesc(), newDesc);
-        return result;
+        Board fetchedBoard = BoardSteps.getBoard(board.getBoardId());
+        softAssert.assertEquals(fetchedBoard.getBoardName(), updatedBoard.getBoardName());
+        softAssert.assertEquals(fetchedBoard.getBoardDesc(), updatedBoard.getBoardDesc());
+        return updatedBoard;
     }
 
     public void deleteAndVerifyBoard(Board board) {
-        boardClient.deleteBoard(board.getBoardId());
+        BoardSteps.deleteBoard(board.getBoardId());
         Logs.info("BOARD DELETED: " + board.getBoardName());
-        verifyEntityDeleted(() -> boardClient.getBoardById(board.getBoardId()));
+        verifyEntityDeleted(() -> BoardSteps.getBoard(board.getBoardId()));
     }
 
     // ========== LIST OPERATIONS ==========
-    public List createAndVerifyList(Board board, String listName) {
-        List list = listClient.createList(new List(board.getBoardId(), listName));
-        Logs.info("LIST CREATED: " + listName + " | ID: " + list.getListId());
-        softAssert.assertEquals(list.getListName(), listName);
-        softAssert.assertEquals(list.getBoardId(), board.getBoardId());
+    public List createAndVerifyList(Board board) {
+        List list = ListSteps.createList(board.getBoardId());
+        Logs.info("LIST CREATED: " + list.getListName() + " | ID: " + list.getListId());
+
+        List fetchedList = ListSteps.getList(list.getListId());
+        softAssert.assertEquals(fetchedList.getListName(), list.getListName());
+        softAssert.assertEquals(fetchedList.getBoardId(), board.getBoardId());
         return list;
     }
 
-    public List updateAndVerifyList(List list, String newName, String pos) {
-        List updatedList = new List(list.getListId(), newName,pos);
-        List result = listClient.updateList(updatedList.getListId(),updatedList);
-        Logs.info("LIST UPDATED: " + newName + " | ID: " + list.getListId());
+    public List updateAndVerifyList(List list) {
+        List updatedList = ListSteps.updateList(list.getListId());
+        Logs.info("LIST UPDATED: " + updatedList.getListName() + " | ID: " + list.getListId());
 
-        List fetchedList = listClient.getList(list.getListId());
-        softAssert.assertEquals(fetchedList.getListName(), newName);
-        return result;
+        List fetchedList = ListSteps.getList(list.getListId());
+        softAssert.assertEquals(fetchedList.getListName(), updatedList.getListName());
+        return updatedList;
     }
 
+
     // ========== CARD OPERATIONS ==========
-    public Card createAndVerifyCard(List list, String cardName) {
-        Card card = cardClient.createCard(new Card(list.getListId(), cardName));
-        Logs.info("CARD CREATED: " + cardName + " | ID: " + card.getCardId());
-        softAssert.assertEquals(card.getCardName(), cardName);
-        softAssert.assertEquals(card.getListId(), list.getListId());
+    public Card createAndVerifyCard(List list) {
+        Card card = CardSteps.createCard(list.getListId());
+        Logs.info("CARD CREATED: " + card.getCardName() + " | ID: " + card.getCardId());
+
+        Card fetchedCard = CardSteps.getCard(card.getCardId());
+        softAssert.assertEquals(fetchedCard.getCardName(), card.getCardName());
+        softAssert.assertEquals(fetchedCard.getListId(), list.getListId());
         return card;
     }
 
-    public Card updateAndVerifyCard(Card card, String newName, String newDesc) {
+    public Card updateAndVerifyCard(Card card) {
+        String newDescription = "Updated description " + System.currentTimeMillis();
+        Card updatedCard = CardSteps.updateCardDescription(card.getCardId(), newDescription);
+        Logs.info("CARD UPDATED: " + card.getCardName() + " | ID: " + card.getCardId());
 
-        Card updatedCard = new Card(card.getListId(), newName, newDesc);
-        updatedCard.setCardId(card.getCardId());
-
-        Card result = cardClient.updateCard(updatedCard.getCardId(), updatedCard);
-        Logs.info("CARD UPDATED: " + newName + " | ID: " + card.getCardId());
-
-        Card fetchedCard = cardClient.getCard(updatedCard.getCardId());
-        fetchedCard.setCardName("Updated Test Card");
-        Logs.info("CARD FETCHED: " + fetchedCard.getCardName() + " | ID: " + fetchedCard.getCardId());
-        softAssert.assertEquals(fetchedCard.getListId(), card.getListId(), "List ID mismatch");
-        softAssert.assertEquals(fetchedCard.getCardDescription(), newDesc, "Card description mismatch");
-        softAssert.assertEquals(fetchedCard.getCardName(), newName, "Carddd name mismatch");
-
-        return result;
+        Card fetchedCard = CardSteps.getCard(card.getCardId());
+        softAssert.assertEquals(fetchedCard.getCardDescription(), newDescription);
+        return fetchedCard;
     }
 
     public void deleteAndVerifyCard(Card card) {
-        cardClient.deleteCard(card.getCardId());
+        CardSteps.deleteCard(card.getCardId());
         Logs.info("CARD DELETED: " + card.getCardName());
-        verifyEntityDeleted(() -> cardClient.getCard(card.getCardId()));
+        verifyEntityDeleted(() -> CardSteps.getCard(card.getCardId()));
     }
 
     // ========== CHECKLIST OPERATIONS ==========
-    public CheckList createAndVerifyChecklist(Card card, String checklistName) {
-        CheckList checklist = checklistClient.createCheckList(new CheckList(card.getCardId(), checklistName));
-        Logs.info("CHECKLIST CREATED: " + checklistName + " | ID: " + checklist.getChecklistId());
-        softAssert.assertEquals(checklist.getChecklistName(), checklistName);
-        softAssert.assertEquals(checklist.getCardId(), card.getCardId());
+    public CheckList createAndVerifyChecklist(Card card) {
+        CheckList checklist = CheckListSteps.createChecklist(card.getCardId());
+        Logs.info("CHECKLIST CREATED: " + checklist.getChecklistName() + " | ID: " + checklist.getChecklistId());
+
+        CheckList fetchedChecklist = CheckListSteps.getChecklist(checklist.getChecklistId());
+        softAssert.assertEquals(fetchedChecklist.getChecklistName(), checklist.getChecklistName());
+        softAssert.assertEquals(fetchedChecklist.getCardId(), card.getCardId());
         return checklist;
     }
 
-    public CheckList updateAndVerifyChecklist(CheckList checklist, String newName) {
-        CheckList updatedChecklist = new CheckList(checklist.getCardId(), newName);
-        CheckList result = checklistClient.updateCheckList(checklist.getChecklistId(), updatedChecklist);
-        Logs.info("CHECKLIST UPDATED: " + newName + " | ID: " + checklist.getChecklistId());
+    public CheckList updateAndVerifyChecklist(CheckList checklist) {
+        CheckList updatedChecklist = CheckListSteps.updateChecklistName(checklist.getChecklistId());
+        Logs.info("CHECKLIST UPDATED: " + updatedChecklist.getChecklistName() + " | ID: " + checklist.getChecklistId());
 
-        CheckList fetchedChecklist = checklistClient.getCheckList(checklist.getChecklistId());
-        softAssert.assertEquals(fetchedChecklist.getChecklistName(), newName);
-        return result;
+        CheckList fetchedChecklist = CheckListSteps.getChecklist(checklist.getChecklistId());
+        softAssert.assertEquals(fetchedChecklist.getChecklistName(), updatedChecklist.getChecklistName());
+        return updatedChecklist;
     }
 
     public void deleteAndVerifyChecklist(CheckList checklist) {
-        checklistClient.deleteCheckList(checklist.getChecklistId());
+        CheckListSteps.deleteChecklist(checklist.getChecklistId());
         Logs.info("CHECKLIST DELETED: " + checklist.getChecklistName());
-        verifyEntityDeleted(() -> checklistClient.getCheckList(checklist.getChecklistId()));
+        verifyEntityDeleted(() -> CheckListSteps.getChecklist(checklist.getChecklistId()));
     }
 
     // ========== COMMON UTILITIES ==========
@@ -128,7 +122,12 @@ public class TrelloTestUtils {
             fetchOperation.run();
             softAssert.fail("Entity should not exist after deletion");
         } catch (RuntimeException e) {
-            softAssert.assertTrue(e.getMessage().contains("404"), "Expected 404 error");
+            softAssert.assertTrue(e.getMessage().contains("404") || e.getMessage().contains("not found"),
+                    "Expected not found error but got: " + e.getMessage());
         }
+    }
+
+    public void assertAll() {
+        softAssert.assertAll();
     }
 }

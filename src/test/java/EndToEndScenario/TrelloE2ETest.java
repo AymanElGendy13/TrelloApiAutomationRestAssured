@@ -14,9 +14,8 @@ import org.testng.annotations.Test;
 
 @Listeners(TestNGListeners.class)
 public class TrelloE2ETest {
-
-    private final TrelloTestUtils TrelloApiClient = new TrelloTestUtils();
-    JsonUtils testData;
+    private final TrelloTestUtils trelloUtils = new TrelloTestUtils();
+    private JsonUtils testData;
 
     @BeforeClass
     @Step("Setting up Request and Response")
@@ -27,39 +26,81 @@ public class TrelloE2ETest {
     }
 
     @Test
-    public void BasicUserFlow() {
+    public void basicUserFlow() {
         Logs.info("Starting Basic User Flow Test");
 
-        Board board = TrelloApiClient.createAndVerifyBoard(
-                testData.getJsonData("data.boardName"),
-                testData.getJsonData("data.boardDescription")
-        );
+        // Create entities
+        Board board = trelloUtils.createAndVerifyBoard();
+        List list = trelloUtils.createAndVerifyList(board);
+        Card card = trelloUtils.createAndVerifyCard(list);
+        CheckList checklist = trelloUtils.createAndVerifyChecklist(card);
 
-        List list = TrelloApiClient.createAndVerifyList(board, testData.getJsonData("data.listName"));
-        Card card = TrelloApiClient.createAndVerifyCard(list, testData.getJsonData("data.cardName"));
-        CheckList checkList = TrelloApiClient.createAndVerifyChecklist(card, testData.getJsonData("data.checklistName"));
+        // Cleanup
+        trelloUtils.deleteAndVerifyChecklist(checklist);
+        trelloUtils.deleteAndVerifyCard(card);
+        trelloUtils.deleteAndVerifyBoard(board);
 
-        TrelloApiClient.deleteAndVerifyChecklist(checkList);
-        TrelloApiClient.deleteAndVerifyCard(card);
-        TrelloApiClient.deleteAndVerifyBoard(board);
+        trelloUtils.assertAll();
     }
 
     @Test
-    public void TrelloFullUserFlow() {
+    public void trelloFullUserFlow() {
         Logs.info("Starting Complete User Flow Test");
 
-        Board board = TrelloApiClient.createAndVerifyBoard(testData.getJsonData("data.boardName"),testData.getJsonData("data.boardDescription"));
-        Board updatedBoard = TrelloApiClient.updateAndVerifyBoard(board, testData.getJsonData("data.updatedBoardName"), testData.getJsonData("data.updatedBoardDescription"));
-        List list = TrelloApiClient.createAndVerifyList(board, testData.getJsonData("data.listName"));
-        TrelloApiClient.updateAndVerifyList(list, testData.getJsonData("data.updatedListName"), testData.getJsonData("data.NewPosition"));
-        Card card = TrelloApiClient.createAndVerifyCard(list, testData.getJsonData("data.cardName"));
-        Card updatedCard = TrelloApiClient.updateAndVerifyCard(card, testData.getJsonData("data.updatedCardName"), testData.getJsonData("data.updatedCardDescription"));
-        CheckList checkList = TrelloApiClient.createAndVerifyChecklist(card, testData.getJsonData("data.checklistName"));
-        CheckList updatedCheckList = TrelloApiClient.updateAndVerifyChecklist(checkList, testData.getJsonData("data.updatedChecklistName"));
+        // Create and update board
+        Board board = trelloUtils.createAndVerifyBoard();
+        Board updatedBoard = trelloUtils.updateAndVerifyBoard(board);
 
-        TrelloApiClient.deleteAndVerifyChecklist(updatedCheckList);
-        TrelloApiClient.deleteAndVerifyCard(updatedCard);
-        TrelloApiClient.deleteAndVerifyBoard(updatedBoard);
+        // Create and update list
+        List list = trelloUtils.createAndVerifyList(updatedBoard);
+        trelloUtils.updateAndVerifyList(list);
+
+
+        // Create new active list
+        List activeList = trelloUtils.createAndVerifyList(updatedBoard);
+
+        // Create and update card
+        Card card = trelloUtils.createAndVerifyCard(activeList);
+        Card updatedCard = trelloUtils.updateAndVerifyCard(card);
+
+        // Create and update checklist
+        CheckList checklist = trelloUtils.createAndVerifyChecklist(updatedCard);
+        CheckList updatedChecklist = trelloUtils.updateAndVerifyChecklist(checklist);
+
+        // Cleanup
+        trelloUtils.deleteAndVerifyChecklist(updatedChecklist);
+        trelloUtils.deleteAndVerifyCard(updatedCard);
+        trelloUtils.deleteAndVerifyBoard(updatedBoard);
+
+        trelloUtils.assertAll();
     }
 
+    @Test
+    public void dataDrivenFlow() {
+        Logs.info("Starting Data-Driven User Flow Test");
+
+        // Create board with test data
+        Board board = trelloUtils.createAndVerifyBoard();
+        board.setBoardName(testData.getJsonData("data.boardName"));
+        board.setBoardDesc(testData.getJsonData("data.boardDescription"));
+
+        // Create list with test data
+        List list = trelloUtils.createAndVerifyList(board);
+        list.setListName(testData.getJsonData("data.listName"));
+
+        // Create card with test data
+        Card card = trelloUtils.createAndVerifyCard(list);
+        card.setCardName(testData.getJsonData("data.cardName"));
+
+        // Create checklist with test data
+        CheckList checklist = trelloUtils.createAndVerifyChecklist(card);
+        checklist.setChecklistName(testData.getJsonData("data.checklistName"));
+
+        // Cleanup
+        trelloUtils.deleteAndVerifyChecklist(checklist);
+        trelloUtils.deleteAndVerifyCard(card);
+        trelloUtils.deleteAndVerifyBoard(board);
+
+        trelloUtils.assertAll();
+    }
 }

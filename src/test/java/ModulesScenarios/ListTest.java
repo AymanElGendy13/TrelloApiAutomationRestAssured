@@ -1,87 +1,93 @@
 package ModulesScenarios;
 
-import Clients.BoardClient;
-import Clients.ListClient;
-import Payloads.BoardPayload;
-import Payloads.ListPayload;
-import Pojo.Board;
 import Pojo.List;
+import Steps.BoardSteps;
+import Steps.ListSteps;
+import Pojo.Board;
 import Utils.Logs;
+import Utils.TrelloTestUtils;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.testng.asserts.SoftAssert;
 
-import static Payloads.BoardPayload.getRandom;
-
 public class ListTest extends BaseTest {
+    private final TrelloTestUtils trelloUtils = new TrelloTestUtils();
+    private SoftAssert softAssert = new SoftAssert();
 
-    private final BoardClient boardClient = new BoardClient();
-    private final ListClient listClient = new ListClient();
     private String createdBoardId;
     private String createdListId;
-    SoftAssert softAssert = new SoftAssert();
 
     @BeforeClass
     public void setUp() {
         Logs.info("===================================List Test===================================");
-        // Create a board to associate with the list
-        Board boardRequest = new Board(
-                getRandom(BoardPayload.boardNames),
-                getRandom(BoardPayload.boardDescriptions),
-                true
-        );
-        Board createdBoard = boardClient.createBoard(boardRequest);
-        Logs.info("Created board: " + createdBoard);
-        createdBoardId = createdBoard.getBoardId();
-        Logs.info(createdBoardId);
+
+        // Create board with random test data
+        Board board = trelloUtils.createAndVerifyBoard();
+        createdBoardId = board.getBoardId();
+        Logs.info("Created board ID: " + createdBoardId);
     }
 
     @Test(priority = 1)
     public void createListTest() {
-        List listRequest = new List(
-                createdBoardId,
-                getRandom(ListPayload.listNames)
-        );
-        List createdList = listClient.createList(listRequest);
-        Logs.info("Created list: " + createdList);
-        softAssert.assertNotNull(createdList.getListId());
-        softAssert.assertNotNull(createdList.getListName());
-        softAssert.assertEquals(createdList.getBoardId(),createdBoardId);
-        softAssert.assertEquals(createdList.getBoardId(), listRequest.getBoardId());
-        createdListId = createdList.getListId();
+        if (createdBoardId == null) {
+            throw new IllegalStateException("Board must be created first");
+        }
+
+        List list = trelloUtils.createAndVerifyList(BoardSteps.getBoard(createdBoardId));
+        createdListId = list.getListId();
+        Logs.info("Created list ID: " + createdListId);
+
+        softAssert.assertNotNull(list, "List should not be null");
+        softAssert.assertNotNull(createdListId, "List ID should not be null");
+        softAssert.assertEquals(list.getBoardId(), createdBoardId, "List should belong to the created board");
     }
 
     @Test(priority = 2)
     public void getListTest() {
-        Logs.info("Getting list with ID: " + createdListId);
-        List retrievedList = listClient.getList(createdListId);
-        Logs.info("Retrieved list: " + retrievedList);
-        softAssert.assertNotNull(retrievedList.getListId());
-        softAssert.assertNotNull(retrievedList.getListName());
-        softAssert.assertEquals(retrievedList.getListId(), createdListId);
+        if (createdListId == null) {
+            throw new IllegalStateException("List must be created first");
+        }
+
+        List list = ListSteps.getList(createdListId);
+        Logs.info("Retrieved list: " + list);
+
+        softAssert.assertNotNull(list, "List should exist");
+        softAssert.assertEquals(list.getListId(), createdListId, "List ID should match");
+        softAssert.assertEquals(list.getBoardId(), createdBoardId, "List should still belong to the original board");
     }
 
     @Test(priority = 3)
     public void updateListTest() {
-        List updatedListRequest = new List(
-                createdListId,
-                getRandom(ListPayload.updatedListNames),
-                getRandom(ListPayload.listPositions)
-        );
-        Logs.info("Updating list with ID: " + createdListId);
-        List updatedList = listClient.updateList(createdListId,updatedListRequest);
+        if (createdListId == null) {
+            throw new IllegalStateException("List must be created first");
+        }
+
+        List updatedList = trelloUtils.updateAndVerifyList(ListSteps.getList(createdListId));
         Logs.info("Updated list: " + updatedList);
-        softAssert.assertNotNull(updatedList.getListId());
-        softAssert.assertNotNull(updatedList.getListName());
-        softAssert.assertEquals(updatedList.getBoardId(), createdBoardId);
-        softAssert.assertEquals(updatedList.getListId(), updatedListRequest.getListId());
+
+        // Verify the update persisted
+        List fetchedList = ListSteps.getList(createdListId);
+        softAssert.assertEquals(fetchedList.getListName(),
+                updatedList.getListName(), "List name should be updated");
+        softAssert.assertEquals(fetchedList.getListId(), createdListId,
+                "List ID should remain the same");
     }
 
     @AfterClass
-    public void deleteBoard(){
-        Logs.info("Deleting board with ID: " + createdBoardId);
-        boardClient.deleteBoard(createdBoardId);
-        Logs.info("Board deleted successfully");
+    public void cleanUp() {
+        Logs.info("Starting test cleanup");
+
+        try {
+            // Delete board if it exists
+            if (createdBoardId != null) {
+                Logs.info("Deleting board with ID: " + createdBoardId);
+                trelloUtils.deleteAndVerifyBoard(BoardSteps.getBoard(createdBoardId));
+            }
+        } catch (Exception e) {
+            Logs.error("Cleanup failed: " + e.getMessage());
+        }
+
+        softAssert.assertAll();
     }
 }
