@@ -5,8 +5,6 @@ import java.util.Map;
 public class Constants {
 
     public static final String BASE_URL = "https://api.trello.com/1";
-    public static final String API_KEY = "APIKEY";
-    public static final String TOKEN = "TOKEN";
     public static final String BOARDS_ENDPOINT = "/boards";
     public static final String CARDS_ENDPOINT = "/cards";
     public static final String LABELS_ENDPOINT = "/labels";
