@@ -42,23 +42,29 @@ Link: [Trello REST API Docs](https://developer.atlassian.com/cloud/trello/rest/a
 ```
 trello-api-automation/
 ├── src/
-│ ├── main/java/
-│ │ ├── Clients/ # API clients for Boards, Cards, Lists, etc.
-│ │ ├── Pojo/ # POJOs for request/response bodies
-│ │ ├── utils/ # Utility classes
-│ │ ├── Routes/ # Route Classes
-│ | ├── Payload/ # JSON test payloads
-│ │ └── config/ # Configuration & environment setup
-│
-│ └── test/java/
-│ ├── EndToEndScenario/ # E2E Scenarios
-│ └── ModulesScenarios/ # Modules Scenarios
-
-│
-├── logs/ # Log4j2 logs
-├── allure-results/ # Allure reporting
-├── pom.xml # Maven dependencies and plugins
-└── TestNGRunner # Suite runner File
+│   ├── main/
+│   │   ├── java/
+│   │   │   ├── Pojo/             # POJOs for request/response bodies
+│   │   │   ├── Steps/            # Test steps or workflow classes
+│   │   │   ├── TestData/         # Test data classes
+│   │   │   ├── Utils/            # Utility classes
+│   │   │   └── resources/        # Resource files
+│   │   │       ├── allure.properties
+│   │   │       ├── config.properties
+│   │   │       └── log4j2.properties
+│   │   └── test/
+│   │       ├── java/
+│   │       │   ├── EndToEndScenario/  # E2E test scenarios
+│   │       │   ├── TrelloE2ETest/    # E2E test classes
+│   │       │   ├── ModulesScenarios/ # Module test scenarios
+│   │       └── resources/
+│   │           └── E2EDataDriven.json # Test data file
+│   └── test-outputs/
+│       ├── allure-results/       # Allure test results
+│       ├── logs/                 # Log files
+│       ├── target/               # Build output
+│       └── TestNGRunners/       # TestNG runner files
+└── pom.xml                      # Maven configuration
 ```
 
 ## 🔧 Installation & Execution
